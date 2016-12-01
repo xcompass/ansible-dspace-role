@@ -1,0 +1,102 @@
+---
+# main tasks file for dspace
+
+- include: db.yml
+- include: tomcat.yml
+- include: webproxy.yml
+  when: dspace_use_proxy
+  
+- name: install build utilities
+  yum: name={{ item }}
+  with_items:
+    - git
+    - maven
+    - ant
+
+- name: DSpace source directory
+  file:
+    path: "{{ dspace_src_dir }}"
+    state: directory
+    owner: "{{ dspace_user }}"
+    group: "{{ dspace_group }}"
+    #mode: u=rwX,g=rwsX,o=rX
+
+- name: DSpace install directory
+  file:
+    path: "{{ dspace_install_dir }}"
+    state: directory
+    owner: "{{ dspace_user }}"
+    group: tomcat
+    mode: u=rwx,g=rwsx,o=rx
+  become_user: root
+  register: has_dspace_src_dir
+  tags: update
+
+- name: checkout DSpace repo
+  git:
+    repo: https://github.com/cubranic/dspace
+    dest: "{{ dspace_src_dir }}"
+    version: "{{ dspace_version }}"
+    force: yes
+  become_user: "{{ dspace_user }}"
+  tags: checkout
+  
+- name: update build configuration
+  lineinfile:
+    dest: "{{ dspace_src_dir }}/build.properties"
+    regexp: "^\\s*{{ item.key }}\\s*="
+    line: "{{ item.key }} = {{ item.value }}"
+  with_items:
+    - key: dspace.install.dir
+      value: "{{ dspace_install_dir }}"
+    - key: dspace.hostname
+      value: "{{ dspace_host_name | default(ansible_fqdn) }}"
+    - key: mail.server
+      value: "{{ dspace_mail_server }}"
+    - key: mail.from.address
+      value: "StatSpace admin <{{ (dspace_admins|first).email }}>"
+    - key: mail.feedback.recipient
+      value: "StatSpace help <{{ (dspace_admins|first).email }}>"
+    - key: mail.admin
+      value: "StatSpace admin <{{ (dspace_admins|first).email }}>"
+    - key: mail.alert.recipient
+      value: "StatSpace admin <{{ (dspace_admins|first).email }}>"
+  tags: build
+
+- name: build DSpace
+  command: "mvn -Dskiptests package -P '!dspace-xmlui,!dspace-lni,!dspace-oai,!dspace-sword,!dspace-swordv2'"
+  args:
+    chdir: "{{ dspace_src_dir }}"
+  become_user: "{{ dspace_user }}"
+  tags: build
+
+- include: install.yml
+  when: has_dspace_src_dir|changed
+  tags: update
+
+- include: update.yml
+  when: not has_dspace_src_dir|changed
+  tags: update
+      
+- name: deploy JSPUI as the ROOT web app
+  template:
+    src: tomcat_context.xml
+    dest: /etc/tomcat/Catalina/localhost/ROOT.xml
+    owner: tomcat
+    group: tomcat
+  notify: restart Tomcat
+  with_items:
+    - jspui
+  tags: deploy
+    
+- name: deploy other web services
+  template:
+    src: tomcat_context.xml
+    dest: /etc/tomcat/Catalina/localhost/{{ item }}.xml
+    owner: tomcat
+    group: tomcat
+  notify: restart Tomcat
+  with_items:
+    - solr
+    - rest
+  tags: deploy

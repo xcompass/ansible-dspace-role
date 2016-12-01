@@ -1,0 +1,18 @@
+---
+# handlers file for dspace
+- name: restart Tomcat
+  service:
+    name: tomcat
+    state: restarted
+  become_user: root
+
+- name: restart Nginx
+  service:
+    name: nginx
+    state: restarted
+
+- name: rebuild DSpace
+  command: "mvn -Dskiptests package -P '!dspace-xmlui,!dspace-lni,!dspace-oai,!dspace-sword,!dspace-swordv2'"
+  args:
+    chdir: "{{ dspace_src_dir }}"
+  become_user: "{{ dspace_user }}"

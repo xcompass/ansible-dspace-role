@@ -1,0 +1,20 @@
+dspace_db_name: dspace
+dspace_db_owner: dspace
+dspace_db_user: dspace
+dspace_db_password: dspace
+
+dspace_src_dir: /var/dspace-src
+dspace_install_dir: /dspace
+dspace_version: statspace
+
+dspace_user: vagrant
+dspace_group: vagrant
+
+dspace_admins: []
+
+dspace_site_registries: []
+
+dspace_use_proxy: yes
+
+dspace_ssl_self_signed: true
+

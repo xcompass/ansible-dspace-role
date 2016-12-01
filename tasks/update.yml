@@ -1,0 +1,16 @@
+---
+- name: update DSpace
+  command: ant update clean_backups
+  args:
+    chdir: "{{ dspace_src_dir }}/dspace/target/dspace-installer"
+  become_user: "{{ dspace_user }}"
+  notify: restart Tomcat
+  
+- name: clean up permissions
+  file:
+    path: "{{ dspace_install_dir }}"
+    state: directory
+    recurse: true
+    owner: "{{ dspace_user }}"
+    group: tomcat
+    mode: u=rwX,g=rwsX,o=rX

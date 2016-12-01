@@ -1,0 +1,26 @@
+---
+- name: install Python module SELinux management
+  yum: name=libsemanage-python
+  when: ansible_selinux.status == 'enabled'
+  
+
+- name: add SELinux permissions necessary for Nginx proxy
+  seboolean: name={{ item }} state=yes persistent=yes
+  with_items:
+    - httpd_setrlimit
+    - httpd_can_network_relay
+  when: ansible_selinux.status == 'enabled'
+  notify: restart Nginx
+
+- name: open firewall to HTTP(S) ports
+  firewalld:
+    service: "{{ item }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  with_items:
+    - http
+    - https
+
+- include: letsencrypt.yml lets_encrypt_email={{ (dspace_admins|first).email }}
+  when: not ssl_self_signed

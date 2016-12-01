@@ -1,0 +1,52 @@
+---
+- name: install Tomcat
+  yum: name={{ item }}
+  with_items:
+    - tomcat
+    - tomcat-native
+  notify: restart Tomcat
+
+- name: tomcat.conf
+  template:
+    src: tomcat.conf.j2
+    dest: /etc/tomcat/tomcat.conf
+    owner: tomcat
+    group: tomcat
+    mode: 0664
+  notify: restart Tomcat
+
+- name: server.xml
+  template:
+    src: server.xml.j2
+    dest: /etc/tomcat/server.xml
+    owner: tomcat
+    group: tomcat
+    mode: 0664
+  notify: restart Tomcat
+
+- name: web.xml
+  template:
+    src: web.xml.j2
+    dest: /etc/tomcat/web.xml
+    owner: tomcat
+    group: tomcat
+    mode: 0664
+  notify: restart Tomcat
+
+- service:
+    name: tomcat
+    state: started
+    enabled: yes
+
+- name: open firewall to Tomcat port
+  firewalld:
+    port: 8080/tcp
+    permanent: true
+    immediate: true
+    state: "{{ dspace_use_proxy | ternary('disabled', 'enabled') }}"
+
+- name: add user to the tomcat group
+  user:
+    name: vagrant
+    groups: tomcat
+    append: yes

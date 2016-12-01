@@ -1,0 +1,10 @@
+galaxy_info:
+  author: Davor Cubranic
+  description: Install and manage a DSpace/StatSpace site
+  company: University of British Columbia
+
+dependencies:
+  - geerlingguy.repo-epel
+  - role: jdauphant.ssl-certs
+    when: ssl_self_signed
+  - jdauphant.nginx

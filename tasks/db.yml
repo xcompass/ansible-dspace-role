@@ -1,0 +1,33 @@
+---
+- name: install Postgres
+  yum: name={{ item }}
+  with_items:
+    - postgresql-server
+    - postgresql-docs
+    - python-psycopg2       # for Ansible control
+
+- name: initialize the DB
+  command: /bin/initdb -D /var/lib/pgsql/data
+  args:
+    chdir: /
+    creates: /var/lib/pgsql/data/postgresql.conf
+  environment:
+    LANG: en_CA.UTF-8
+    LC_ALL: en_CA.UTF-8
+  become_user: postgres
+    
+- service:
+    name: postgresql
+    state: started
+    enabled: yes
+    
+- name: create postgres user
+  postgresql_user:
+    name: "{{ dspace_db_user }}"
+    password: "{{ dspace_db_password }}"
+  
+- name: create postgres database
+  postgresql_db:
+    name: "{{ dspace_db_name }}"
+    owner: "{{ dspace_db_owner }}"
+    encoding: 'UTF-8'

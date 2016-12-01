@@ -1,0 +1,37 @@
+---
+- name: install DSpace
+  command: ant fresh_install
+  args:
+    chdir: "{{ dspace_src_dir }}/dspace/target/dspace-installer"
+  notify: restart Tomcat
+
+- name: clean up permissions
+  file:
+    path: "{{ dspace_install_dir }}"
+    state: directory
+    recurse: true
+    owner: "{{ dspace_user }}"
+    group: tomcat
+    mode: u=rwX,g=rwsX,o=rX
+  become_user: root
+
+- name: migrate DSpace database
+  command: "{{ dspace_install_dir }}/bin/dspace database migrate"
+
+- name: import additional metadata schema
+  command: >
+    {{ dspace_install_dir }}/bin/dspace dsrun
+    org.dspace.administer.MetadataImporter
+    -f {{ dspace_src_dir }}/dspace/config/registries/{{ item }}
+  with_items: "{{ dspace_site_registries|default([]) }}"
+
+- name: create DSpace admin user
+  command: >
+    {{ dspace_install_dir }}/bin/dspace create-administrator
+    -e {{ item.email }}
+    -f {{ item.name }}
+    -l {{ item.surname }}
+    -p {{ item.password }}
+    -c {{ item.locale }}
+  with_items: dspace_admins
+        
