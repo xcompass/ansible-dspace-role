@@ -6,5 +6,5 @@ galaxy_info:
 dependencies:
   - geerlingguy.repo-epel
   - role: jdauphant.ssl-certs
-    when: ssl_self_signed
+    when: dspace_ssl_self_signed
   - jdauphant.nginx

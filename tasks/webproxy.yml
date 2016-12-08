@@ -23,4 +23,4 @@
     - https
 
 - include: letsencrypt.yml lets_encrypt_email={{ (dspace_admins|first).email }}
-  when: not ssl_self_signed
+  when: not dspace_ssl_self_signed
