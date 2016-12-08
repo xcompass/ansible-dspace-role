@@ -5,10 +5,10 @@ dspace_db_password: dspace
 
 dspace_src_dir: /var/dspace-src
 dspace_install_dir: /dspace
-dspace_version: statspace
+dspace_version: master
 
-dspace_user: vagrant
-dspace_group: vagrant
+dspace_user: tomcat
+dspace_group: tomcat
 
 dspace_admins: []
 
