@@ -43,7 +43,7 @@
     port: 8080/tcp
     permanent: true
     immediate: true
-    state: "{{ dspace_use_proxy | ternary('disabled', 'enabled') }}"
+    state: "{{ (dspace_use_proxy == 'true') | ternary('disabled', 'enabled') }}"
 
 - name: add user to the tomcat group
   user:
