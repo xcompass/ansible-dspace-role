@@ -33,5 +33,5 @@
     -l {{ item.surname }}
     -p {{ item.password }}
     -c {{ item.locale }}
-  with_items: dspace_admins
+  with_items: "{{ dspace_admins }}"
         
