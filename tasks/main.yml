@@ -64,7 +64,7 @@
   tags: build
 
 - name: build DSpace
-  command: "mvn -q -Dskiptests package -P '!dspace-xmlui,!dspace-lni,!dspace-oai,!dspace-sword,!dspace-swordv2'"
+  command: "mvn -q -Dskiptests package -P '!dspace-xmlui,!dspace-lni,!dspace-sword,!dspace-swordv2'"
   args:
     chdir: "{{ dspace_src_dir }}"
   become_user: "{{ dspace_user }}"
